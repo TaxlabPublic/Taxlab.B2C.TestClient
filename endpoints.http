@@ -1,0 +1,208 @@
+### -------------------------------------- ####
+###     BEFORE YOU START                   
+###     Go to the following url in your browser
+###
+###     REPLACE VARIABLES IN URL AS WELL AS VARIABLES !!!
+###
+###     https://taxlabpublic.b2clogin.com/taxlabpublic.onmicrosoft.com/B2C_1_CustomBase/oauth2/v2.0/authorize?client_id={{clientId}}&redirect_uri={{redirect_uri}}&response_type=code&grant_type=implicit&scope=openid profile offline_access https://taxlabpublic.onmicrosoft.com/{{clientId}}/api.access
+###
+###     Login using your account and copy code from response url to lie 16
+
+### -------------------------------------- ####
+
+@clientId = <<< CLIENT_ID >>>
+@redirect_uri = <<< REDIRECT_URL >>>
+@client_secret = <<< CLIENT_SECRECT >>>
+@auth_code = <<< COPY_PASTE_AUTH_CODE_HERE >>>
+
+@domain = https://preview.taxlab.online/api-internal
+
+### Get bearer token
+# @name token
+POST https://taxlabpublic.b2clogin.com/taxlabpublic.onmicrosoft.com/B2C_1_CustomBase/oauth2/v2.0/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=authorization_code
+&client_id={{clientId}}
+&scope=openid profile offline_access https://taxlabpublic.onmicrosoft.com/{{clientId}}/api.access
+&redirect_uri={{redirect_uri}}
+&client_secret={{client_secret}}
+&code={{auth_code}}
+
+### Get all taxpayers I have access to
+GET {{domain}}/api/taxpayers
+Content-Type: application/json
+Authorization: Bearer {{token.response.body.$.id_token}}
+
+### Create a taxpayer
+PUT  {{domain}}/api/taxpayers
+Content-Type: application/json
+Authorization: Bearer {{token.response.body.$.id_token}}
+
+{
+  "taxYear": 2022,
+  "balanceDateMonth": 3,
+  "taxpayerOrFirstName": "Test for ZX",
+  "taxFileNumber": "123123123",
+}
+
+### Get all taxpayer by Id
+@taxpayerId = 91b5c4c4-b5a2-4057-b3a1-f52ea7504f5f
+GET {{domain}}/api/taxpayers/{{taxpayerId}}
+Content-Type: application/json
+Authorization: Bearer {{token.response.body.$.id_token}}
+
+### Search for taxpayer by Ird number
+GET {{domain}}/api/taxpayers/search/123123123
+Content-Type: application/json
+Authorization: Bearer {{token.response.body.$.id_token}}
+
+### GET tax agents
+GET  {{domain}}/api/datafeed/taxagents
+Content-Type: application/json
+Authorization: Bearer {{token.response.body.$.id_token}}
+
+### Enable tax agent
+PUT  {{domain}}/api/DataFeed/enableTaxAgent
+Content-Type: application/json
+Authorization: Bearer {{token.response.body.$.id_token}}
+{
+  "taxAgentId": "234567891"
+}
+
+### Enable taxpayer
+PUT  {{domain}}/api/DataFeed/enable
+Content-Type: application/json
+Authorization: Bearer {{token.response.body.$.id_token}}
+
+{
+  "taxAgentId": "123123123",
+  "taxFileNumber": "127127127"
+}
+
+### Disable taxpayer
+DELETE  {{domain}}//api/DataFeed/disable
+Content-Type: application/json
+Authorization: Bearer {{token.response.body.$.id_token}}
+
+{
+  "taxAgentId": "123123123",
+  "taxFileNumber": "127127127"
+}
+
+### Check removed
+GET  {{domain}}/api/datafeed/taxpayers?taxagent=123123123
+Content-Type: application/json
+Authorization: Bearer {{token.response.body.$.id_token}}
+
+
+### Get documents
+GET  {{domain}}/api/Datafeed/documents?timestampFrom=25-Sep-2021
+Content-Type: application/json
+Authorization: Bearer {{token.response.body.$.id_token}}
+
+@taxYear = 2022
+### Create Au Taxpayer for Zx, John
+# @name auTaxpayer
+PUT  {{domain}}/api/taxpayers
+Content-Type: application/json
+Authorization: Bearer {{token.response.body.$.id_token}}
+
+{
+  "taxYear": {{taxYear}},
+  "balanceDateMonth": 6,
+  "taxpayerOrFirstName": "John",
+  "lastName": "Zx",
+  "taxFileNumber": "32989432",
+  "entityType": "individualAU"
+}
+
+### Creating tax return for 2022
+# @name taxReturn
+PUT  {{domain}}/api/taxpayers/taxReturn
+Content-Type: application/json
+Authorization: Bearer {{token.response.body.$.id_token}}
+
+{
+    "taxpayerId": "{{auTaxpayer.response.body.$.content.id}}",
+    "taxYear": {{taxYear}},
+    "balanceDate": "2022-06-30",
+    "startDate": "2021-07-01"
+}
+
+### Get taxpayer details workpaper
+# @name taxpayerDetails
+GET {{domain}}/api/Workpapers/TaxYear/TaxpayerDetailsWorkpaper/{{auTaxpayer.response.body.$.content.id}}/{{taxYear}}
+Authorization: Bearer {{token.response.body.$.id_token}}
+taxpayerId: {{auTaxpayer.response.body.$.content.id}}
+taxYear: {{taxYear}}
+version: null
+
+
+### Update taxpayer details workpaper
+PATCH  {{domain}}/api/Workpapers/TaxYear/TaxpayerDetailsWorkpaper/{{auTaxpayer.response.body.$.content.id}}/{{taxYear}}
+Authorization: Bearer {{token.response.body.$.id_token}}
+Content-Type: application/json
+taxpayerId: {{auTaxpayer.response.body.$.content.id}}
+taxYear: {{taxYear}}
+version: null
+
+[
+    { 
+        "op": "replace",
+        "path": "/dateOfBirth",
+        "value": "1950-01-01"
+    },
+    {
+        "op": "replace",
+        "path": "/abn",
+        "value": "12345678900"
+    }
+]
+
+### Get other income workpaper
+# @name otherInccomeWorkpaper
+GET {{domain}}/api/Workpapers/Adjustment/OtherIncomeWorkpaper/{{auTaxpayer.response.body.$.content.id}}/{{taxYear}}/{{$guid}}
+Authorization: Bearer {{token.response.body.$.id_token}}
+taxpayerId: {{auTaxpayer.response.body.$.content.id}}
+taxYear: {{taxYear}}
+version: null
+
+
+### Update other income workpaper
+POST {{domain}}/api/Workpapers/Adjustment/OtherIncomeWorkpaper
+Authorization: Bearer {{token.response.body.$.id_token}}
+Content-Type: application/json
+taxpayerId: {{auTaxpayer.response.body.$.content.id}}
+taxYear: {{taxYear}}
+
+{
+	"workpaper": {
+		"income": 0.0,
+		"taxAdjustment": {
+			"value": 1235.0,
+			"formula": "1235"
+		},
+		"taxableIncome": 0.0,
+		"permanentDifference": 0.0,
+		"slug": {
+			"accountRecordId": "{{otherInccomeWorkpaper.response.body.$.workpaper.slug.accountRecordId}}",
+			"adjustmentId": "{{otherInccomeWorkpaper.response.body.$.workpaper.slug.adjustmentId}}",
+			"accountCode": "",
+			"accountDescription": "This is my other income",
+			"accountsAmount": 0.0,
+			"accountGroupId": 0,
+			"taxpayerId": "{{auTaxpayer.response.body.$.content.id}}",
+			"taxYear": {{taxYear}}
+		},
+		"classification": {
+			"returnDisclosureTypeId": 108,
+			"taxNarration": "This is my other income",
+		}
+	},
+	"taxpayerId": "{{auTaxpayer.response.body.$.content.id}}",
+	"taxYear": {{taxYear}},
+	"accountRecordId":  "{{otherInccomeWorkpaper.response.body.$.workpaper.slug.accountRecordId}}",
+	"compositeRequest": false,
+	"bypassLockedTaxYear": false
+}
