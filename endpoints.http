@@ -42,7 +42,7 @@ Authorization: Bearer {{token.response.body.$.id_token}}
 {
   "taxYear": 2022,
   "balanceDateMonth": 3,
-  "taxpayerOrFirstName": "Test for ZX",
+  "taxpayerOrFirstName": "ABC Company",
   "taxFileNumber": "123123123",
 }
 
@@ -102,7 +102,7 @@ Content-Type: application/json
 Authorization: Bearer {{token.response.body.$.id_token}}
 
 @taxYear = 2022
-### Create Au Taxpayer for Zx, John
+### Create Au Taxpayer for Doe, John
 # @name auTaxpayer
 PUT  {{domain}}/api/taxpayers
 Content-Type: application/json
@@ -112,7 +112,7 @@ Authorization: Bearer {{token.response.body.$.id_token}}
   "taxYear": {{taxYear}},
   "balanceDateMonth": 6,
   "taxpayerOrFirstName": "John",
-  "lastName": "Zx",
+  "lastName": "Doe",
   "taxFileNumber": "32989432",
   "entityType": "individualAU"
 }
