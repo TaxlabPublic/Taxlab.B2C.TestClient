@@ -29,6 +29,18 @@ grant_type=authorization_code
 &client_secret={{client_secret}}
 &code={{auth_code}}
 
+### Refresh token
+# @name refreshedToken
+POST https://taxlabpublic.b2clogin.com/taxlabpublic.onmicrosoft.com/B2C_1_CustomBase/oauth2/v2.0/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=refresh_token
+&client_id={{clientId}}
+&scope=openid profile offline_access https://taxlabpublic.onmicrosoft.com/{{clientId}}/api.access
+&redirect_uri={{redirect_uri}}
+&client_secret={{client_secret}}
+&refresh_token={{token.response.body.$.refresh_token}}
+
 ### Get all taxpayers I have access to
 GET {{domain}}/api/taxpayers
 Content-Type: application/json
